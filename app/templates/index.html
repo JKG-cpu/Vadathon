@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VADATHON · Software & Hardware Hackathon</title>
+  
+  <!-- Fonts: Premium Sans + Technical Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+
+  <!-- GSAP & Lenis: High Intensity Motion -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
+
+  <style>
+    /* ─── Catppuccin Latte + Neo-Brutalism Tokens ───────────────────────── */
+    :root {
+      --bg:      oklch(96.12% 0.009 257.42); /* #eff1f5 - Base */
+      --surface: oklch(93.61% 0.015 257.42); /* #e6e9ef - Mantle */
+      --fg:      oklch(42.33% 0.024 266.3);  /* #4c4f69 - Text */
+      --muted:   oklch(57.3% 0.021 266.3);   /* #7c7f93 - Subtext1 */
+      --border:  oklch(15% 0.02 266.3);      /* #1e1e2e - High Contrast */
+      
+      --accent:  oklch(50.48% 0.203 294.31); /* #8839ef - Mauve */
+      --accent2: oklch(65.19% 0.174 19.57);  /* #fe640b - Peach */
+      --success: oklch(63.14% 0.134 145.45); /* #40a02b - Green */
+      
+      --font-display: 'Inter Tight', -apple-system, sans-serif;
+      --font-body:    'Inter Tight', -apple-system, sans-serif;
+      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+      /* Neo-brutalist Scale */
+      --bw: 4px; /* Bold Border Width */
+      --shadow: 8px 8px 0px var(--border);
+      --shadow-sm: 4px 4px 0px var(--border);
+      --shadow-lg: 16px 16px 0px var(--border);
+      
+      --fs-h1: clamp(80px, 15vw, 180px);
+      --fs-h2: clamp(48px, 8vw, 96px);
+      --fs-h3: clamp(28px, 4vw, 40px);
+      --fs-body: 20px;
+      
+      --container: 1400px;
+      --gutter: 48px;
+      --gap: 32px;
+      
+      --radius: 0px; /* Hard neo-brutalist edges */
+    }
+
+    /* ─── Base ────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html.lenis { height: auto; }
+    .lenis-smooth { scroll-behavior: auto !important; }
+    .lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+    .lenis-stopped { overflow: hidden; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.1;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 { 
+      font-family: var(--font-display); 
+      font-weight: 900; 
+      margin: 0; 
+      line-height: 0.85;
+      text-transform: uppercase;
+      letter-spacing: -0.06em;
+    }
+
+    p { line-height: 1.4; margin: 0; }
+
+    a { color: inherit; text-decoration: none; transition: 0.2s; }
+    button { font: inherit; cursor: pointer; border: none; outline: none; }
+
+    /* ─── Layout Primitives ────────────────────────────────────────────── */
+    .container {
+      max-width: var(--container);
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+      position: relative;
+    }
+
+    .section {
+      padding-block: 160px;
+      position: relative;
+    }
+
+    .brut-box {
+      background: var(--surface);
+      border: var(--bw) solid var(--border);
+      box-shadow: var(--shadow);
+      padding: var(--gap);
+      border-radius: var(--radius);
+      transition: 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .brut-box:hover {
+      transform: translate(-4px, -4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 48px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 24px;
+      text-transform: uppercase;
+      border: var(--bw) solid var(--border);
+      box-shadow: var(--shadow);
+      background: var(--accent);
+      color: white;
+      transition: 0.1s;
+      gap: 16px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translate(-4px, -4px);
+      box-shadow: var(--shadow-lg);
+      background: var(--accent2);
+    }
+
+    .btn:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .btn-secondary { background: var(--accent2); }
+    .btn-outline { background: var(--bg); color: var(--border); }
+
+    /* ─── Navigation ─────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: calc(100% - 96px);
+      max-width: var(--container);
+      background: var(--bg);
+      border: var(--bw) solid var(--border);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+    }
+
+    .logo {
+      font-weight: 900;
+      font-size: 32px;
+      letter-spacing: -0.08em;
+      color: var(--border);
+    }
+
+    .nav-links { display: flex; gap: 40px; }
+    .nav-links a { font-weight: 800; text-transform: uppercase; font-size: 16px; letter-spacing: -0.02em; }
+    .nav-links a:hover { color: var(--accent); }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .nav { top: 20px; width: calc(100% - 40px); }
+    }
+
+    /* ─── Hero ───────────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 180px;
+      padding-bottom: 100px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-content {
+      text-align: center;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      font-size: var(--fs-h1);
+      margin-bottom: 32px;
+      color: var(--border);
+      position: relative;
+    }
+
+    .hero h1 span {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: var(--bw) var(--border);
+      filter: drop-shadow(var(--shadow-sm));
+    }
+
+    .hero-desc {
+      font-size: 28px;
+      font-weight: 800;
+      max-width: 800px;
+      margin: 0 auto 48px;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+
+    .hero-image-wrap {
+      margin-top: 64px;
+      margin-bottom: 64px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-image {
+      max-width: 100%;
+      height: auto;
+      border: var(--bw) solid var(--border);
+      box-shadow: var(--shadow-lg);
+      transform: rotate(-2deg);
+      transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .hero-image:hover {
+      transform: rotate(0deg) scale(1.02);
+    }
+
+    .hero-tags {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--bg);
+      border: var(--bw) solid var(--border);
+      padding: 12px 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      font-size: 16px;
+      transform: rotate(var(--rot, 0deg));
+      box-shadow: var(--shadow-sm);
+    }
+
+    .countdown {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 64px auto;
+    }
+
+    .cd-item {
+      background: var(--surface);
+      border: var(--bw) solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 32px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cd-val { font-size: 80px; font-weight: 900; color: var(--accent); line-height: 1; }
+    .cd-label { font-size: 14px; font-family: var(--font-mono); text-transform: uppercase; font-weight: 800; color: var(--muted); margin-top: 12px; }
+
+    @media (max-width: 768px) {
+      .countdown { grid-template-columns: repeat(2, 1fr); }
+      .cd-val { font-size: 48px; }
+    }
+
+    /* ─── Marquee ────────────────────────────────────────────────────── */
+    .marquee {
+      background: var(--accent2);
+      border-block: var(--bw) solid var(--border);
+      padding: 24px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      z-index: 10;
+    }
+
+    .marquee-content {
+      display: flex;
+      gap: 60px;
+      width: max-content;
+    }
+
+    .marquee-item {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 48px;
+      text-transform: uppercase;
+      color: var(--border);
+      letter-spacing: -0.05em;
+    }
+
+    /* ─── Tracks & Content ───────────────────────────────────────────── */
+    .tracks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 40px;
+    }
+
+    @media (max-width: 500px) {
+      .tracks-grid { grid-template-columns: 1fr; }
+    }
+
+    .track-card {
+      position: relative;
+    }
+
+    .track-num {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      background: var(--accent);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border: var(--bw) solid var(--border);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: 24px;
+      z-index: 2;
+    }
+
+    /* ─── Partners ───────────────────────────────────────────────────── */
+    .partners-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+    }
+
+    .partner-card {
+      height: 160px;
+      display: grid;
+      place-items: center;
+      background: var(--surface);
+      border: var(--bw) solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: 0.3s;
+    }
+
+    .partner-card:hover {
+      background: var(--bg);
+      transform: translateY(-8px);
+      box-shadow: var(--shadow);
+    }
+
+    .partner-name {
+      font-weight: 900;
+      font-size: 32px;
+      color: var(--border);
+      letter-spacing: -0.06em;
+      opacity: 0.3;
+    }
+
+    /* ─── FAQ ────────────────────────────────────────────────────────── */
+    .faq-list {
+      max-width: 1000px;
+      margin-inline: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .faq-item {
+      border: var(--bw) solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .faq-q {
+      padding: 32px;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .faq-a {
+      padding: 0 32px 32px;
+      display: none;
+      color: var(--fg);
+      font-size: 20px;
+      max-width: 800px;
+    }
+
+    .faq-item.active {
+      box-shadow: var(--shadow-sm);
+      background: var(--bg);
+    }
+
+    .faq-item.active .faq-a { display: block; }
+    .faq-q::after { content: '+'; font-size: 40px; line-height: 0.5; }
+    .faq-item.active .faq-q::after { content: '−'; }
+
+    /* ─── Floating Elements ──────────────────────────────────────────── */
+    .float {
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+      border: var(--bw) solid var(--border);
+      box-shadow: 6px 6px 0px var(--border);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-weight: 900;
+      padding: 12px;
+      background: var(--bg);
+    }
+
+    .float-1 { top: 20%; left: 8%; background: var(--accent); color: white; transform: rotate(-12deg); }
+    .float-2 { top: 45%; right: 10%; background: var(--accent2); color: white; transform: rotate(15deg); }
+    .float-3 { bottom: 15%; left: 15%; background: var(--success); color: white; transform: rotate(-5deg); }
+
+    /* ─── Section Decoration ─────────────────────────────────────────── */
+    .section-title {
+      margin-bottom: 80px;
+      text-align: left;
+    }
+
+    .section-title p { 
+      font-family: var(--font-mono); 
+      color: var(--accent); 
+      font-weight: 800; 
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .section-title h2 { font-size: var(--fs-h2); }
+
+    /* ─── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      background: var(--border);
+      color: var(--bg);
+      padding-block: 120px;
+      border-top: 10px solid var(--accent);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 64px;
+    }
+
+    .footer-logo { font-size: 64px; font-weight: 900; letter-spacing: -0.08em; margin-bottom: 24px; }
+    
+    .footer-links h4 { color: var(--accent2); margin-bottom: 24px; font-size: 18px; font-family: var(--font-mono); }
+    .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .footer-links a { font-weight: 700; opacity: 0.8; }
+    .footer-links a:hover { opacity: 1; color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr; gap: 48px; }
+    }
+
+    /* ─── Scroll Reveal ──────────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(60px); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Banner -->
+  <div class="marquee-container" style="position: fixed; top: 0; width: 100%; background: var(--accent); border-bottom: var(--bw) solid var(--border); z-index: 2000; overflow: hidden; height: 40px; display: flex; align-items: center;">
+    <div class="marquee-content-top" style="display: flex; white-space: nowrap; font-family: var(--font-mono); font-weight: 900; font-size: 14px; color: white;">
+      <span style="padding-right: 60px;">BITS MEET ATOMS · APPLICATIONS OPEN · JULY 15-17 · 48 HOURS OF CREATION · 200 BUILDERS · $20,000 PRIZE POOL · </span>
+      <span style="padding-right: 60px;">BITS MEET ATOMS · APPLICATIONS OPEN · JULY 15-17 · 48 HOURS OF CREATION · 200 BUILDERS · $20,000 PRIZE POOL · </span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="logo">VADATHON</div>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#tracks">Tracks</a>
+      <a href="#partners">Partners</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="#apply" class="btn btn-outline" style="padding: 12px 24px; font-size: 16px; box-shadow: 4px 4px 0 var(--border);">Apply</a>
+  </nav>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="section hero">
+      <div class="float float-1">010101</div>
+      <div class="float float-2">SOLDER_IT</div>
+      <div class="float float-3">SHIP_NOW</div>
+      
+      <div class="container hero-content">
+        <div class="hero-tags">
+          <span class="tag" style="--rot: -2deg;">July 15-17, 2026</span>
+          <span class="tag" style="--rot: 3deg;">48 Hours</span>
+          <span class="tag" style="--rot: -1deg;">Global / Hybrid</span>
+        </div>
+        
+        <h1 id="hero-title">VADA<span>THON</span></h1>
+        
+        <p class="hero-desc reveal">
+          The ultimate software and hardware hackathon for the next generation of builders. Bits meet atoms in a 48-hour sprint of pure creation.
+        </p>
+        
+        <div class="hero-image-wrap reveal">
+          <img src="mp4sgsiz-image.png" alt="VADATHON Hardware Prototype" class="hero-image">
+        </div>
+
+        <div class="countdown reveal">
+          <div class="cd-item"><span class="cd-val" id="days">00</span><span class="cd-label">Days</span></div>
+          <div class="cd-item"><span class="cd-val" id="hours">00</span><span class="cd-label">Hours</span></div>
+          <div class="cd-item"><span class="cd-val" id="mins">00</span><span class="cd-label">Minutes</span></div>
+          <div class="cd-item"><span class="cd-val" id="secs">00</span><span class="cd-label">Seconds</span></div>
+        </div>
+
+        <div style="margin-top: 64px;" class="reveal">
+          <a href="#apply" class="btn">Register Now <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marquee -->
+    <div class="marquee">
+      <div class="marquee-content">
+        <div class="marquee-item">HARDWARE HACKING</div>
+        <div class="marquee-item">CODE WARRIORS</div>
+        <div class="marquee-item">BITS MEET ATOMS</div>
+        <div class="marquee-item">PROTOTYPING CHAOS</div>
+        <div class="marquee-item">SOLDER & SCRIPT</div>
+        <!-- Repeat -->
+        <div class="marquee-item">HARDWARE HACKING</div>
+        <div class="marquee-item">CODE WARRIORS</div>
+        <div class="marquee-item">BITS MEET ATOMS</div>
+        <div class="marquee-item">PROTOTYPING CHAOS</div>
+        <div class="marquee-item">SOLDER & SCRIPT</div>
+      </div>
+    </div>
+
+    <!-- About / Tracks -->
+    <section class="section" id="tracks">
+      <div class="container">
+        <div class="section-title reveal">
+          <p>// SELECT YOUR DOMAIN</p>
+          <h2>THE TRACKS</h2>
+        </div>
+        
+        <div class="tracks-grid">
+          <div class="brut-box track-card reveal">
+            <div class="track-num">01</div>
+            <h3 style="margin-bottom: 24px; color: var(--accent);">Silicon & Solder</h3>
+            <p>Physical computing at its peak. Build sensors, robotics, and custom boards. We provide the lab, you provide the circuit.</p>
+          </div>
+          
+          <div class="brut-box track-card reveal" style="background: var(--bg);">
+            <div class="track-num" style="background: var(--accent2);">02</div>
+            <h3 style="margin-bottom: 24px; color: var(--accent2);">Neural Networks</h3>
+            <p>From autonomous agents to generative hardware interfaces. Merge LLMs with the physical world in high-fidelity prototypes.</p>
+          </div>
+          
+          <div class="brut-box track-card reveal">
+            <div class="track-num" style="background: var(--success);">03</div>
+            <h3 style="margin-bottom: 24px; color: var(--success);">The Open Web</h3>
+            <p>Decentralized systems, collaborative tools, and next-gen protocols. Build software that lasts beyond the 48-hour sprint.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Partners -->
+    <section class="section" id="partners">
+      <div class="container">
+        <div class="section-title reveal">
+          <p>// SUPPORTING THE SPRINT</p>
+          <h2>OUR PARTNERS</h2>
+        </div>
+        
+        <div class="partners-grid">
+          <div class="partner-card reveal"><div class="partner-name">TECHCORP</div></div>
+          <div class="partner-card reveal"><div class="partner-name">GLOBAL_IO</div></div>
+          <div class="partner-card reveal"><div class="partner-name">NEXUS_SYS</div></div>
+          <div class="partner-card reveal"><div class="partner-name">VOID_LABS</div></div>
+          <div class="partner-card reveal"><div class="partner-name">ORBIT_AI</div></div>
+          <div class="partner-card reveal"><div class="partner-name">ZENITH_HW</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-title reveal">
+          <p>// FREQUENTLY ASKED</p>
+          <h2>FAQ</h2>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item reveal">
+            <div class="faq-q">What is VADATHON?</div>
+            <div class="faq-a">A 48-hour high-performance hackathon focused on the intersection of hardware and software. It's where bits meet atoms.</div>
+          </div>
+          <div class="faq-item reveal">
+            <div class="faq-q">Who can join?</div>
+            <div class="faq-a">Builders of all kinds. Whether you're a firmware specialist, a web dev, or a mechanical engineer, there's a place for you here.</div>
+          </div>
+          <div class="faq-item reveal">
+            <div class="faq-q">Is it free?</div>
+            <div class="faq-a">Yes. We provide the workspace, the hardware kits, the food, and the mentorship. You provide the innovation.</div>
+          </div>
+          <div class="faq-item reveal">
+            <div class="faq-q">Where is it located?</div>
+            <div class="faq-a">VADATHON is a hybrid event with physical hubs in major tech centers and a global virtual participation platform.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section" id="apply">
+      <div class="container">
+        <div class="brut-box reveal" style="background: var(--accent2); color: white; padding: 120px 40px; text-align: center;">
+          <h2 style="font-size: var(--fs-h1); color: white; margin-bottom: 40px;">BUILD THE FUTURE.</h2>
+          <p style="font-size: 24px; font-weight: 800; margin-bottom: 64px; max-width: 800px; margin-inline: auto; line-height: 1.2;">
+            Applications are closing soon. Secure your spot in the most intense builder event of the year.
+          </p>
+          <a href="/login" class="btn btn-outline" style="font-size: 32px; padding: 32px 64px;">Apply Now</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <div class="footer-logo">VADATHON</div>
+        <p style="opacity: 0.6; font-family: var(--font-mono); font-size: 16px;">
+          © 2026 VADATHON · BITS MEET ATOMS · BUILT FOR THE NEXT GENERATION OF BUILDERS
+        </p>
+      </div>
+      <div class="footer-links">
+        <h4>PLATFORM</h4>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#tracks">Tracks</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#apply">Apply</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>SOCIALS</h4>
+        <ul>
+          <li><a href="#">X / Twitter</a></li>
+          <li><a href="#">Discord</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ─── Lenis Smooth Scroll ──────────────────────────────────────────
+    const lenis = new Lenis();
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // ─── GSAP Animations ──────────────────────────────────────────────
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Scroll Reveal
+    gsap.utils.toArray('.reveal').forEach((elem) => {
+      gsap.to(elem, {
+        scrollTrigger: {
+          trigger: elem,
+          start: 'top 90%',
+          toggleActions: 'play none none none'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1.2,
+        ease: 'power4.out'
+      });
+    });
+
+    // Parallax Floats
+    gsap.to('.float-1', {
+      y: -200,
+      rotation: 360,
+      scrollTrigger: { scrub: 0.5 }
+    });
+    gsap.to('.float-2', {
+      y: -300,
+      rotation: -60,
+      scrollTrigger: { scrub: 0.5 }
+    });
+    gsap.to('.float-3', {
+      y: -150,
+      x: 100,
+      scrollTrigger: { scrub: 0.5 }
+    });
+
+    // Hero Title Entrance
+    gsap.from('#hero-title', {
+      y: 150,
+      opacity: 0,
+      duration: 1.5,
+      delay: 0.3,
+      ease: 'expo.out'
+    });
+
+    // Hero Image Parallax
+    gsap.to('.hero-image', {
+      y: -50,
+      rotation: 2,
+      scale: 1.05,
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true
+      }
+    });
+
+    // Marquee Continuous Loop
+    gsap.to('.marquee-content', {
+      xPercent: -50,
+      repeat: -1,
+      duration: 25,
+      ease: 'none'
+    });
+
+    gsap.to('.marquee-content-top', {
+      xPercent: -50,
+      repeat: -1,
+      duration: 30,
+      ease: 'none'
+    });
+
+    // ─── FAQ Toggle ───────────────────────────────────────────────────
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.classList.toggle('active');
+      });
+    });
+
+    // ─── Countdown Timer ─────────────────────────────────────────────
+    const targetDate = new Date('July 15, 2026 09:00:00').getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const dist = targetDate - now;
+
+      if (dist < 0) return;
+
+      const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+      const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((dist % (1000 * 60)) / 1000);
+
+      document.getElementById('days').innerText = String(d).padStart(2, '0');
+      document.getElementById('hours').innerText = String(h).padStart(2, '0');
+      document.getElementById('mins').innerText = String(m).padStart(2, '0');
+      document.getElementById('secs').innerText = String(s).padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // ─── Tweaks (Hidden) ─────────────────────────────────────────────
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "accentColor": "#8839ef",
+      "shadowSize": "8px"
+    }/*EDITMODE-END*/;
+  </script>
+</body>
+</html>
